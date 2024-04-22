@@ -9,6 +9,8 @@
     "serve": "node dist/app.js"
   },
   "dependencies": {
+    "@grpc/grpc-js": "^1.10.6",
+    "@hyperledger/fabric-gateway": "^1.5.1",
     "express": "^4.19.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5"
