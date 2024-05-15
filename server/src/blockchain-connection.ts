@@ -4,67 +4,73 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import * as grpc from '@grpc/grpc-js';
+import * as grpc from "@grpc/grpc-js";
 import {
   connect,
   Contract,
   Identity,
   Signer,
   signers,
-} from '@hyperledger/fabric-gateway';
-import * as crypto from 'crypto';
-import { promises as fs } from 'fs';
-import * as path from 'path';
-import { TextDecoder } from 'util';
+} from "@hyperledger/fabric-gateway";
+import * as crypto from "crypto";
+import { promises as fs } from "fs";
+import * as path from "path";
+import { TextDecoder } from "util";
 
-const channelName = envOrDefault('CHANNEL_NAME', 'mychannel');
-const chaincodeName = envOrDefault('CHAINCODE_NAME', 'basic');
-const mspId = envOrDefault('MSP_ID', 'Org1MSP');
+const channelName = envOrDefault("CHANNEL_NAME", "mychannel");
+const chaincodeName = envOrDefault("CHAINCODE_NAME", "basic");
+const mspId = envOrDefault("MSP_ID", "Org1MSP");
 
 // Path to crypto materials.
 const cryptoPath = envOrDefault(
-  'CRYPTO_PATH',
+  "CRYPTO_PATH",
   path.resolve(
     __dirname,
-    '..',
-    '..',
-    'blockchain-network',
-    'organizations',
-    'peerOrganizations',
-    'org1.example.com'
-  )
+    "..",
+    "..",
+    "blockchain-network",
+    "organizations",
+    "peerOrganizations",
+    "org1.example.com",
+  ),
 );
 
-// Path to user private key directory.
+// Path to auth private key directory.
 const keyDirectoryPath = envOrDefault(
-  'KEY_DIRECTORY_PATH',
-  path.resolve(cryptoPath, 'users', 'User1@org1.example.com', 'msp', 'keystore')
-);
-
-// Path to user certificate.
-const certPath = envOrDefault(
-  'CERT_PATH',
+  "KEY_DIRECTORY_PATH",
   path.resolve(
     cryptoPath,
-    'users',
-    'User1@org1.example.com',
-    'msp',
-    'signcerts',
-    'cert.pem'
-  )
+    "users",
+    "User1@org1.example.com",
+    "msp",
+    "keystore",
+  ),
+);
+
+// Path to auth certificate.
+const certPath = envOrDefault(
+  "CERT_PATH",
+  path.resolve(
+    cryptoPath,
+    "users",
+    "User1@org1.example.com",
+    "msp",
+    "signcerts",
+    "cert.pem",
+  ),
 );
 
 // Path to peer tls certificate.
 const tlsCertPath = envOrDefault(
-  'TLS_CERT_PATH',
-  path.resolve(cryptoPath, 'peers', 'peer0.org1.example.com', 'tls', 'ca.crt')
+  "TLS_CERT_PATH",
+  path.resolve(cryptoPath, "peers", "peer0.org1.example.com", "tls", "ca.crt"),
 );
 
 // Gateway peer endpoint.
-const peerEndpoint = envOrDefault('PEER_ENDPOINT', 'localhost:7051');
+const peerEndpoint = envOrDefault("PEER_ENDPOINT", "localhost:7051");
 
 // Gateway peer SSL host name override.
-const peerHostAlias = envOrDefault('PEER_HOST_ALIAS', 'peer0.org1.example.com');
+const peerHostAlias = envOrDefault("PEER_HOST_ALIAS", "peer0.org1.example.com");
 
 const utf8Decoder = new TextDecoder();
 const assetId = `asset${Date.now()}`;
@@ -104,7 +110,7 @@ export default async function main(): Promise<void> {
     // Initialize a set of asset data on the ledger using the chaincode 'InitLedger' function.
     await initLedger(contract);
 
-    console.info('Successfully connected to blockchain network');
+    console.info("Successfully connected to blockchain network");
     // // Return all the current assets on the ledger.
     // await getAllAssets(contract);
 
@@ -129,7 +135,7 @@ async function newGrpcConnection(): Promise<grpc.Client> {
   const tlsRootCert = await fs.readFile(tlsCertPath);
   const tlsCredentials = grpc.credentials.createSsl(tlsRootCert);
   return new grpc.Client(peerEndpoint, tlsCredentials, {
-    'grpc.ssl_target_name_override': peerHostAlias,
+    "grpc.ssl_target_name_override": peerHostAlias,
   });
 }
 
@@ -152,12 +158,12 @@ async function newSigner(): Promise<Signer> {
  */
 async function initLedger(contract: Contract): Promise<void> {
   console.log(
-    '\n--> Submit Transaction: InitLedger, function creates the initial set of assets on the ledger'
+    "\n--> Submit Transaction: InitLedger, function creates the initial set of assets on the ledger",
   );
 
-  await contract.submitTransaction('InitLedger');
+  await contract.submitTransaction("InitLedger");
 
-  console.log('*** Transaction committed successfully');
+  console.log("*** Transaction committed successfully");
 }
 
 /**
@@ -165,14 +171,14 @@ async function initLedger(contract: Contract): Promise<void> {
  */
 async function getAllAssets(contract: Contract): Promise<void> {
   console.log(
-    '\n--> Evaluate Transaction: GetAllAssets, function returns all the current assets on the ledger'
+    "\n--> Evaluate Transaction: GetAllAssets, function returns all the current assets on the ledger",
   );
 
-  const resultBytes = await contract.evaluateTransaction('GetAllAssets');
+  const resultBytes = await contract.evaluateTransaction("GetAllAssets");
 
   const resultJson = utf8Decoder.decode(resultBytes);
   const result = JSON.parse(resultJson);
-  console.log('*** Result:', result);
+  console.log("*** Result:", result);
 }
 
 /**
@@ -180,19 +186,19 @@ async function getAllAssets(contract: Contract): Promise<void> {
  */
 async function createAsset(contract: Contract): Promise<void> {
   console.log(
-    '\n--> Submit Transaction: CreateAsset, creates new asset with ID, Color, Size, Owner and AppraisedValue arguments'
+    "\n--> Submit Transaction: CreateAsset, creates new asset with ID, Color, Size, Owner and AppraisedValue arguments",
   );
 
   await contract.submitTransaction(
-    'CreateAsset',
+    "CreateAsset",
     assetId,
-    'yellow',
-    '5',
-    'Tom',
-    '1300'
+    "yellow",
+    "5",
+    "Tom",
+    "1300",
   );
 
-  console.log('*** Transaction committed successfully');
+  console.log("*** Transaction committed successfully");
 }
 
 /**
@@ -201,39 +207,39 @@ async function createAsset(contract: Contract): Promise<void> {
  */
 async function transferAssetAsync(contract: Contract): Promise<void> {
   console.log(
-    '\n--> Async Submit Transaction: TransferAsset, updates existing asset owner'
+    "\n--> Async Submit Transaction: TransferAsset, updates existing asset owner",
   );
 
-  const commit = await contract.submitAsync('TransferAsset', {
-    arguments: [assetId, 'Saptha'],
+  const commit = await contract.submitAsync("TransferAsset", {
+    arguments: [assetId, "Saptha"],
   });
   const oldOwner = utf8Decoder.decode(commit.getResult());
 
   console.log(
-    `*** Successfully submitted transaction to transfer ownership from ${oldOwner} to Saptha`
+    `*** Successfully submitted transaction to transfer ownership from ${oldOwner} to Saptha`,
   );
-  console.log('*** Waiting for transaction commit');
+  console.log("*** Waiting for transaction commit");
 
   const status = await commit.getStatus();
   if (!status.successful) {
     throw new Error(
-      `Transaction ${status.transactionId} failed to commit with status code ${status.code}`
+      `Transaction ${status.transactionId} failed to commit with status code ${status.code}`,
     );
   }
 
-  console.log('*** Transaction committed successfully');
+  console.log("*** Transaction committed successfully");
 }
 
 async function readAssetByID(contract: Contract): Promise<void> {
   console.log(
-    '\n--> Evaluate Transaction: ReadAsset, function returns asset attributes'
+    "\n--> Evaluate Transaction: ReadAsset, function returns asset attributes",
   );
 
-  const resultBytes = await contract.evaluateTransaction('ReadAsset', assetId);
+  const resultBytes = await contract.evaluateTransaction("ReadAsset", assetId);
 
   const resultJson = utf8Decoder.decode(resultBytes);
   const result = JSON.parse(resultJson);
-  console.log('*** Result:', result);
+  console.log("*** Result:", result);
 }
 
 /**
@@ -241,21 +247,21 @@ async function readAssetByID(contract: Contract): Promise<void> {
  */
 async function updateNonExistentAsset(contract: Contract): Promise<void> {
   console.log(
-    '\n--> Submit Transaction: UpdateAsset asset70, asset70 does not exist and should return an error'
+    "\n--> Submit Transaction: UpdateAsset asset70, asset70 does not exist and should return an error",
   );
 
   try {
     await contract.submitTransaction(
-      'UpdateAsset',
-      'asset70',
-      'blue',
-      '5',
-      'Tomoko',
-      '300'
+      "UpdateAsset",
+      "asset70",
+      "blue",
+      "5",
+      "Tomoko",
+      "300",
     );
-    console.log('******** FAILED to return an error');
+    console.log("******** FAILED to return an error");
   } catch (error) {
-    console.log('*** Successfully caught the error: \n', error);
+    console.log("*** Successfully caught the error: \n", error);
   }
 }
 
