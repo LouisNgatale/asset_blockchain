@@ -3,6 +3,7 @@ import { prisma } from "../../app";
 import { ResponseCode } from "../../constants";
 import { uuid } from "uuidv4";
 import jwt from "jsonwebtoken";
+import { UserRole } from "@prisma/client";
 
 export default class AuthController {
   static async login(req: Request, res: Response) {
@@ -14,6 +15,13 @@ export default class AuthController {
     try {
       const body = req.body as LoginDto;
 
+      if (!body.NIDA || !body.phoneNumber)
+        return res.status(400).json({
+          success: false,
+          code: ResponseCode.INTERNAL_SERVER_ERROR,
+          message: "Provide payload",
+        });
+
       const userExists = await prisma.user.findUnique({
         where: {
           NIDA: body.NIDA,
@@ -24,6 +32,72 @@ export default class AuthController {
         return res.status(400).json({
           success: false,
           code: ResponseCode.USER_DOESNT_EXIST,
+        });
+
+      const accessToken = jwt.sign(
+        {
+          uuid: userExists.uuid,
+          NIDA: userExists.NIDA,
+          fullName: userExists.fullName,
+          phoneNumber: userExists.phoneNumber,
+        },
+        process.env.JWT_SECRET || "secret",
+        {
+          expiresIn: "1y",
+        },
+      );
+
+      return res.json({
+        success: true,
+        data: {
+          user: userExists,
+          accessToken,
+        },
+      });
+    } catch (e) {
+      const error = e as Error;
+      return res.status(400).json({
+        success: false,
+        message: error.message,
+        code: ResponseCode.INTERNAL_SERVER_ERROR,
+      });
+    }
+  }
+
+  static async loginStaff(req: Request, res: Response) {
+    interface LoginDto {
+      NIDA: string;
+      phoneNumber: string;
+    }
+
+    try {
+      const body = req.body as LoginDto;
+
+      if (!body.NIDA || !body.phoneNumber)
+        return res.status(400).json({
+          success: false,
+          code: ResponseCode.INTERNAL_SERVER_ERROR,
+          message: "Provide payload",
+        });
+
+      const userExists = await prisma.user.findUnique({
+        where: {
+          NIDA: body.NIDA,
+        },
+      });
+
+      if (!userExists)
+        return res.status(400).json({
+          success: false,
+          code: ResponseCode.USER_DOESNT_EXIST,
+        });
+
+      if (userExists.role !== UserRole.ADMIN)
+        return res.status(400).json({
+          success: false,
+          code: ResponseCode.UNAUTHORIZED,
+          message:
+            "You're not an authorized admin. You can't access this resource",
         });
 
       const accessToken = jwt.sign(
@@ -86,6 +160,7 @@ export default class AuthController {
           phoneNumber: body.phoneNumber,
           fullName: body.fullName,
           NIDA: body.NIDA,
+          role: UserRole.CITIZEN,
         },
       });
 

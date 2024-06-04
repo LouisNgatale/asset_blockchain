@@ -5,8 +5,6 @@ import morgan from "morgan";
 import { PrismaClient } from "@prisma/client";
 import routers from "./controllers";
 import cors from "cors";
-
-import connectBlockchain from "./blockchain-connection";
 import log from "./middlewares/logger";
 
 const app = express();
@@ -42,19 +40,21 @@ const bootstrapServer = async () => {
       },
     );
 
-    app.use(morganMiddleware);
-    await connectBlockchain().catch((error) => {
-      console.error("******** FAILED to run the application:", error);
-      process.exitCode = 1;
-    });
+    await prisma.$connect();
+
+    // app.use(morganMiddleware);
+    // await connectBlockchain().catch((error) => {
+    //   console.error("******** FAILED to run the application:", error);
+    //   process.exitCode = 1;
+    // });
 
     app.use(cors());
-    app.use(express.json());
     app.use(
       express.urlencoded({
         extended: true,
       }),
     );
+    app.use(express.json());
 
     app.get("/", (req, res) => {
       res.send("Hello from TypeScript Node.js server!");
@@ -66,11 +66,10 @@ const bootstrapServer = async () => {
       log.info(`Server running on http://localhost:${PORT}`);
     });
   } catch (e) {
+    void prisma.$disconnect();
     console.error(e);
     process.exit(1);
   }
 };
 
-void bootstrapServer().finally(async () => {
-  await prisma.$disconnect();
-});
+void bootstrapServer();

@@ -10,15 +10,16 @@ datasource db {
 }
 
 model User {
-  id          String  @id @default(auto()) @map("_id") @db.ObjectId
-  uuid        String  @unique
-  email       String  @unique
-  NIDA        String  @unique
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  uuid        String   @unique
+  email       String   @unique
+  NIDA        String   @unique
   fullName    String
   otp         String?
   phoneNumber String
+  role        UserRole
 
-  @@map("auth")
+  @@map("user")
 }
 
 model Asset {
@@ -66,4 +67,9 @@ enum ASSET_TYPE {
   LAND
   BUILDING
   MOTOR_VEHICLE
+}
+
+enum UserRole {
+  ADMIN
+  CITIZEN
 }
