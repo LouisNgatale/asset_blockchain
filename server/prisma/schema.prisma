@@ -17,7 +17,10 @@ model User {
   fullName    String
   otp         String?
   phoneNumber String
-  role        UserRole
+  countryCode String   @default("255")
+  role        UserRole @default(value: CITIZEN)
+  createdAt   DateTime @default(now())
+  citizenship String   @default("Tanzania")
 
   @@map("user")
 }

@@ -97,7 +97,7 @@ export default class AuthController {
           success: false,
           code: ResponseCode.UNAUTHORIZED,
           message:
-            "You're not an authorized admin. You can't access this resource",
+            "You're not an authorized dashboard. You can't access this resource",
         });
 
       const accessToken = jwt.sign(
@@ -136,6 +136,8 @@ export default class AuthController {
       phoneNumber: string;
       email: string;
       fullName: string;
+      citizenship: string;
+      countryCode: string;
     }
 
     try {
@@ -161,6 +163,9 @@ export default class AuthController {
           fullName: body.fullName,
           NIDA: body.NIDA,
           role: UserRole.CITIZEN,
+          createdAt: new Date(),
+          countryCode: body.countryCode || "255",
+          citizenship: body.citizenship || "Tanzania",
         },
       });
 
