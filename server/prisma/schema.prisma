@@ -26,18 +26,21 @@ model User {
 }
 
 model Asset {
-  id                 String          @id @default(auto()) @map("_id") @db.ObjectId
-  uuid               String          @unique
-  type               ASSET_TYPE
-  owner              AssetOwner
-  location           AssetLocation?
-  dimensions         AssetDimensions
-  isListed           Boolean
-  images             String[]
-  description        String?
-  price              String?
-  registrationNumber String
-  documents          AssetDocument[]
+  id           String          @id @default(auto()) @map("_id") @db.ObjectId
+  uuid         String          @unique
+  type         ASSET_TYPE
+  owner        AssetOwner
+  location     AssetLocation?
+  dimensions   AssetDimensions
+  isListed     Boolean
+  images       String[]
+  description  String?
+  valuation    String?
+  parcelNumber String
+  plotNumber   String
+  titleNumber  String
+  documents    AssetDocument[]
+  registeredAt DateTime        @default(now())
 
   @@map("asset")
 }
