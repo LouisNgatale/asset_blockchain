@@ -80,7 +80,7 @@ export default class AssetsController {
     }
   }
 
-  // TODO: Fetch all assets by admin
+  // Fetch all assets by admin
   static async fetchAssets(req: Request, res: Response) {
     try {
       const assets = await prisma.asset.findMany();
@@ -99,8 +99,120 @@ export default class AssetsController {
     }
   }
 
-  // TODO: Fetch all assets by owner
-  // TODO: List asset to market place
-  // TODO: Fetch all assets in market place
-  // TODO: Remove asset from market place
+  // Fetch all assets by owner
+  static async fetchUserAssets(req: Request, res: Response) {
+    try {
+      const ownerUUID = req.params.ownerUUID;
+
+      const assets = await prisma.asset.findMany({
+        where: {
+          owner: {
+            is: {
+              uuid: ownerUUID,
+            },
+          },
+        },
+      });
+
+      return res.status(200).json({
+        status: "success",
+        data: assets,
+      });
+    } catch (e) {
+      const error = e as Error;
+      return res.status(400).json({
+        status: "error",
+        message: error.message,
+        code: ResponseCode.INTERNAL_SERVER_ERROR,
+      });
+    }
+  }
+
+  // List asset to market place
+  static async listAssetToMarket(req: Request, res: Response) {
+    interface IPayload {
+      listingPrice: string;
+    }
+
+    try {
+      const assetUUID = req.params.assetUUID;
+      const payload = req.body as IPayload;
+
+      const listedAsset = await prisma.asset.update({
+        where: {
+          uuid: assetUUID,
+        },
+        data: {
+          isListed: true,
+          listedOn: new Date(),
+          listingPrice: payload.listingPrice,
+        },
+      });
+
+      return res.status(200).json({
+        status: "success",
+        message: "Asset successfully listed on the market",
+        data: listedAsset,
+      });
+    } catch (e) {
+      const error = e as Error;
+      return res.status(400).json({
+        status: "error",
+        message: error.message,
+        code: ResponseCode.INTERNAL_SERVER_ERROR,
+      });
+    }
+  }
+
+  // Fetch all assets in market place
+  static async fetchMarketplace(req: Request, res: Response) {
+    try {
+      const assets = await prisma.asset.findMany({
+        where: {
+          isListed: true,
+        },
+      });
+
+      return res.status(200).json({
+        status: "success",
+        data: assets,
+      });
+    } catch (e) {
+      const error = e as Error;
+      return res.status(400).json({
+        status: "error",
+        message: error.message,
+        code: ResponseCode.INTERNAL_SERVER_ERROR,
+      });
+    }
+  }
+
+  // Remove asset from market place
+  static async deListItemFromMarket(req: Request, res: Response) {
+    try {
+      const assetUUID = req.params.assetUUID;
+
+      const listedAsset = await prisma.asset.update({
+        where: {
+          uuid: assetUUID,
+        },
+        data: {
+          isListed: false,
+        },
+      });
+
+      return res.status(200).json({
+        status: "success",
+        message: "Asset successfully listed on the market",
+        data: listedAsset,
+      });
+    } catch (e) {
+      const error = e as Error;
+      return res.status(400).json({
+        status: "error",
+        message: error.message,
+        code: ResponseCode.INTERNAL_SERVER_ERROR,
+      });
+    }
+  }
 }

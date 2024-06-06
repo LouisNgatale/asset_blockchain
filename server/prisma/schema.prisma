@@ -41,6 +41,8 @@ model Asset {
   titleNumber  String
   documents    AssetDocument[]
   registeredAt DateTime        @default(now())
+  listedOn     DateTime?
+  listingPrice String?
 
   @@map("asset")
 }
