@@ -29,7 +29,7 @@ model Asset {
   id           String          @id @default(auto()) @map("_id") @db.ObjectId
   uuid         String          @unique
   type         ASSET_TYPE
-  owner        AssetOwner
+  owner        PartialUser
   location     AssetLocation?
   dimensions   AssetDimensions
   isListed     Boolean
@@ -43,11 +43,31 @@ model Asset {
   registeredAt DateTime        @default(now())
   listedOn     DateTime?
   listingPrice String?
+  booking      AssetBooking[]
 
   @@map("asset")
 }
 
-type AssetOwner {
+model AssetBooking {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  uuid          String         @unique
+  asset         Asset          @relation(fields: [assetUUID], references: [uuid])
+  assetUUID     String
+  stages        BookingStage[]
+  buyer         PartialUser
+  proposedPrice String
+  messages      Message[]
+
+  @@map("asset_booking")
+}
+
+type BookingStage {
+  name     DealStage
+  date     DateTime
+  metadata Json?
+}
+
+type PartialUser {
   uuid        String
   fullName    String
   NIDA        String
@@ -80,4 +100,26 @@ enum ASSET_TYPE {
 enum UserRole {
   ADMIN
   CITIZEN
+}
+
+enum DealStage {
+  OFFER
+  NEGOTIATION
+  CONTRACT_DRAFTING
+  CONTRACT_SIGNING
+  PAYMENT
+  COMPLETED
+}
+
+type Message {
+  id        String
+  text      String
+  createdAt DateTime
+  user      MessageUser
+}
+
+type MessageUser {
+  uuid     String
+  fullName String
+  avatar   String
 }

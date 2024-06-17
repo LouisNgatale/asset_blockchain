@@ -9,6 +9,9 @@ router.post("", AssetsController.createAsset);
 // Fetch all assets
 router.get("", AssetsController.fetchAssets);
 
+router.get("/owner", AssetsController.fetchOwnerAsset);
+router.post("/book", AssetsController.bookAsset);
+
 // List asset to market
 router.post(
   "/market-place/list/:assetUUID",
@@ -22,7 +25,9 @@ router.post(
 );
 
 // Fetch all assets in the market place
-router.post("/market-place", AssetsController.fetchMarketplace);
+router.get("/market-place", AssetsController.fetchMarketplace);
+router.get("/deals", AssetsController.fetchDeals);
+router.post("/deals/message/:dealUUID", AssetsController.addMessage);
 
 // Fetch all assets owned by a user
 router.get("/:ownerUUID", AssetsController.fetchUserAssets);
