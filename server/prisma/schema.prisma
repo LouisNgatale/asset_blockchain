@@ -49,14 +49,16 @@ model Asset {
 }
 
 model AssetBooking {
-  id            String         @id @default(auto()) @map("_id") @db.ObjectId
-  uuid          String         @unique
-  asset         Asset          @relation(fields: [assetUUID], references: [uuid])
-  assetUUID     String
-  stages        BookingStage[]
-  buyer         PartialUser
-  proposedPrice String
-  messages      Message[]
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  uuid             String         @unique
+  asset            Asset          @relation(fields: [assetUUID], references: [uuid])
+  assetUUID        String
+  stages           BookingStage[]
+  buyer            PartialUser
+  proposedPrice    String
+  originalContract String?
+  signedContract   String?
+  messages         Message[]
 
   @@map("asset_booking")
 }
@@ -75,8 +77,8 @@ type PartialUser {
 }
 
 type AssetLocation {
-  latitude       Int
-  longitude      Int
+  latitude       String
+  longitude      String
   nearbyLocation String?
   locationName   String
 }
@@ -106,9 +108,10 @@ enum DealStage {
   OFFER
   NEGOTIATION
   CONTRACT_DRAFTING
-  CONTRACT_SIGNING
+  LAND_INSPECTOR
   PAYMENT
   COMPLETED
+  CANCELLED
 }
 
 type Message {

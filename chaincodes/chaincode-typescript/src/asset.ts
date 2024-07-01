@@ -6,21 +6,24 @@ import {Object, Property} from 'fabric-contract-api';
 
 @Object()
 export class Asset {
-    @Property()
-    public docType?: string;
+	@Property()
+	public docType?: string;
 
-    @Property()
-    public ID: string;
+	@Property()
+	public uuid: string;
 
-    @Property()
-    public Color: string;
+	@Property()
+	public type: string;
 
-    @Property()
-    public Size: number;
+	@Property()
+	public ownerUUID: string;
 
-    @Property()
-    public Owner: string;
+	@Property()
+	public parcelNumber: string;
 
-    @Property()
-    public AppraisedValue: number;
+	@Property()
+	public plotNumber: string;
+
+	@Property()
+	public titleNumber: number;
 }

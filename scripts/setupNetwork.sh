@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd ${PWD}/blockchain-network
+cd ${PWD}/../blockchain-network
 
 export CORE_PEER_TLS_ENABLED=true
 export CORE_PEER_LOCALMSPID="Org1MSP"
@@ -10,4 +10,4 @@ export CORE_PEER_ADDRESS=localhost:7051
 export PATH=${PWD}/../bin:$PATH
 export FABRIC_CFG_PATH=${PWD}/../config
 
-bash ./network.sh up -ca
+bash ./network.sh up createChannel -c mychannel -ca
