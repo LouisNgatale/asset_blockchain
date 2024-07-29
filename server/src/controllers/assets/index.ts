@@ -10,6 +10,7 @@ import {
 import { prisma } from '../../app';
 import { uuid } from 'uuidv4';
 import { JwtPayload } from 'jsonwebtoken';
+import currency from 'currency.js';
 import { Contract } from '@hyperledger/fabric-gateway';
 
 const utf8Decoder = new TextDecoder();
@@ -110,6 +111,8 @@ export default class AssetsController {
 			const resultJson = utf8Decoder.decode(resultBytes);
 			const result = JSON.parse(resultJson);
 			console.log('*** Result:', result);
+
+			// result.map(async (res) => {})
 
 			return res.json({ data: result, status: 'success' });
 		} catch (e) {
@@ -497,6 +500,45 @@ export default class AssetsController {
 		}
 	}
 
+	static async updatePaidAmount(req: Request, res: Response) {
+		try {
+			const body = req.body as {
+				paidAmount: string;
+			};
+			const dealUUID = req.params.dealUUID;
+
+			const deal = await prisma.assetBooking.findFirst({
+				where: {
+					uuid: dealUUID,
+				},
+			});
+
+			const updated = await prisma.assetBooking.update({
+				where: {
+					uuid: dealUUID,
+				},
+				data: {
+					paidAmount: currency(deal?.paidAmount || 0)
+						.add(body.paidAmount)
+						.toString(),
+				},
+			});
+
+			return res.json({
+				data: updated,
+				status: 'success',
+			});
+		} catch (e) {
+			console.error(e);
+			const error = e as Error;
+			return res.status(400).json({
+				status: 'error',
+				message: error.message,
+				code: ResponseCode.INTERNAL_SERVER_ERROR,
+			});
+		}
+	}
+
 	static async uploadContract(req: Request, res: Response) {
 		try {
 			const payload = req.body as {
@@ -525,6 +567,74 @@ export default class AssetsController {
 		} catch (e) {
 			const error = e as Error;
 			console.error(error);
+			return res.status(400).json({
+				status: 'error',
+				message: error.message,
+				code: ResponseCode.INTERNAL_SERVER_ERROR,
+			});
+		}
+	}
+
+	static async transferAsset(req: Request, res: Response) {
+		try {
+			const contract = req.app.get('contract') as Contract;
+
+			const dealUUID = req.params.dealUUID;
+
+			const booking = await prisma.assetBooking.update({
+				where: {
+					uuid: dealUUID,
+				},
+				data: {
+					stages: {
+						push: {
+							name: DealStage.COMPLETED,
+							date: new Date(),
+						},
+					},
+				},
+			});
+
+			const bookingWithAsset = await prisma.assetBooking.findFirst({
+				where: {
+					uuid: dealUUID,
+				},
+				include: {
+					asset: true,
+				},
+			});
+
+			const newOwner = booking.buyer;
+
+			// Update asset
+			const updatedAsset = await prisma.asset.update({
+				where: {
+					uuid: bookingWithAsset?.asset?.uuid,
+				},
+				data: {
+					owner: newOwner,
+					pastOwners: {
+						push: bookingWithAsset?.asset?.owner,
+					},
+					isListed: false,
+				},
+			});
+
+			console.log(bookingWithAsset?.asset?.uuid);
+			// Update the world state
+			await contract.submitTransaction(
+				'TransferAsset',
+				bookingWithAsset?.asset?.uuid!,
+				newOwner.uuid
+			);
+
+			return res.status(200).json({
+				data: updatedAsset,
+				status: 'success',
+			});
+		} catch (e) {
+			console.error(e);
+			const error = e as Error;
 			return res.status(400).json({
 				status: 'error',
 				message: error.message,

@@ -9,6 +9,7 @@ router.post('', AssetsController.createAsset);
 // Fetch all assets
 router.get('', AssetsController.fetchAssets);
 router.get('/world-state', AssetsController.getWorldState);
+router.post('/transfer-asset/:dealUUID', AssetsController.transferAsset);
 
 router.get('/owner', AssetsController.fetchOwnerAsset);
 router.post('/book', AssetsController.bookAsset);
@@ -31,6 +32,7 @@ router.get('/deals', AssetsController.fetchDeals);
 router.get('/deals/inspection', AssetsController.fetchDealsInspection);
 router.post('/deals/message/:dealUUID', AssetsController.addMessage);
 router.put('/deals/:dealUUID', AssetsController.updateDeal);
+router.put('/deals/:dealUUID/payment', AssetsController.updatePaidAmount);
 router.post('/deals/:dealUUID/upload', AssetsController.uploadContract);
 
 // Fetch all assets owned by a user
